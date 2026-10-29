@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>APEX NIGHTS — Open World Street Racing</title>
+  <link rel="stylesheet" href="styles.css" />
+  <script type="importmap">
+    {
+      "imports": {
+        "three": "./vendor/three.module.min.js",
+        "three/addons/": "./vendor/addons/"
+      }
+    }
+  </script>
+</head>
+<body>
+  <div id="app">
+    <canvas id="scene"></canvas>
+    <div id="grade"></div>
+    <div id="speedlines"></div>
+    <div id="vignette"></div>
+
+    <!-- ============ HUD ============ -->
+    <div id="hud" class="hidden">
+      <div id="hudTopLeft">
+        <div class="hud-card money-card">
+          <div class="card-label">BANK</div>
+          <div class="money-row"><span class="cur">$</span><span id="moneyValue">0</span></div>
+        </div>
+        <div class="hud-card objective-card" id="objectiveCard">
+          <div class="card-label"><span class="pulse-dot"></span>OBJECTIVE</div>
+          <div id="objectiveName">Reach the APEX Garage</div>
+          <div id="objectiveMeta"><span id="objectiveDist">--</span> m</div>
+        </div>
+        <div class="hud-card nav-card hidden" id="navHud">
+          <svg id="navArrow" viewBox="0 0 40 40"><path d="M20 3 L34 33 L20 26 L6 33 Z"/></svg>
+          <div class="nav-body">
+            <div class="nav-inst" id="navInst">STRAIGHT AHEAD</div>
+            <div class="nav-dest" id="navDest">APEX GARAGE</div>
+            <div class="nav-remain" id="navRemain">-- REMAINING</div>
+          </div>
+          <button class="nav-clear" id="navClear" title="Clear route">×</button>
+        </div>
+      </div>
+
+      <div id="hudTopRight">
+        <div class="hud-card clock-card">
+          <div class="clock-row">
+            <div>
+              <div class="card-label">TIME</div>
+              <div id="clockValue">18:30</div>
+            </div>
+            <div class="clock-phase" id="clockPhase">DUSK</div>
+          </div>
+          <div class="clock-track"><div id="clockFill"></div></div>
+        </div>
+        <div class="hud-hint"><kbd>Q</kbd><kbd>E</kbd> GEARS <span class="sep"></span> <kbd>M</kbd> MAP <span class="sep"></span> <kbd>ESC</kbd> MENU</div>
+      </div>
+
+      <div id="raceHud">
+        <div class="race-top">
+          <div class="race-pos"><span id="racePos">1</span><span class="pos-suffix">/</span><span id="raceTotal">5</span><span class="pos-label">POS</span></div>
+          <div class="race-mid">
+            <div class="race-name" id="raceName">HARBOR SPRINT</div>
+            <div class="race-sub"><span id="raceLap">LAP 1/1</span><span class="dot"></span><span id="raceTime">00:00.00</span></div>
+          </div>
+        </div>
+      </div>
+
+      <div id="minimapWrap">
+        <canvas id="minimap" width="320" height="320"></canvas>
+        <div class="minimap-ring"></div>
+        <div class="minimap-north">N</div>
+      </div>
+
+      <div id="gaugeWrap">
+        <div class="fuel-wrap" id="fuelWrap">
+          <div class="fuel-label">FUEL</div>
+          <div class="fuel-track"><div id="fuelFill"></div></div>
+        </div>
+        <div class="nitro-wrap">
+          <div class="nitro-label">NOS</div>
+          <div class="nitro-track"><div id="nitroFill"></div></div>
+        </div>
+        <svg id="gauge" viewBox="0 0 260 260">
+          <defs>
+            <linearGradient id="gaugeGrad" x1="0%" y1="100%" x2="100%" y2="0%">
+              <stop offset="0%" stop-color="#25e0ff" />
+              <stop offset="60%" stop-color="#ffc247" />
+              <stop offset="100%" stop-color="#ff3b4e" />
+            </linearGradient>
+            <filter id="gaugeGlow"><feGaussianBlur stdDeviation="2.4" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+          </defs>
+          <path id="gaugeTrack" d="M 52 200 A 96 96 0 1 1 208 200" fill="none" stroke="rgba(255,255,255,.10)" stroke-width="7" stroke-linecap="round"/>
+          <path id="gaugeArc" d="M 52 200 A 96 96 0 1 1 208 200" fill="none" stroke="url(#gaugeGrad)" stroke-width="7" stroke-linecap="round" filter="url(#gaugeGlow)"/>
+          <g id="gaugeTicks"></g>
+          <g id="needleGroup"><line id="gaugeNeedle" x1="130" y1="150" x2="130" y2="58" stroke="#ffffff" stroke-width="2.5" stroke-linecap="round"/><circle cx="130" cy="150" r="4" fill="#fff"/></g>
+        </svg>
+        <div class="gauge-center">
+          <div id="speedValue">0</div>
+          <div class="speed-unit">KM/H</div>
+        </div>
+        <div class="gear-box"><span class="gear-label">GEAR</span><span id="gearValue">N</span></div>
+        <div class="rpm-bar"><div id="rpmFill"></div></div>
+        <div id="shiftHint">SHIFT UP</div>
+      </div>
+
+      <div id="prompt" class="hidden">
+        <span class="key">F</span><span id="promptText">Enter Garage</span>
+      </div>
+
+      <div id="challengeHud" class="hidden">
+        <div class="challenge-title" id="challengeTitle">DRIFT ZONE</div>
+        <div class="challenge-score"><span id="challengeScore">0</span><span id="challengeTarget">/ 5000</span></div>
+        <div class="challenge-track"><div id="challengeFill"></div></div>
+        <div class="challenge-hint">Release throttle and drift to score</div>
+      </div>
+
+      <div id="driftHud" class="hidden">
+        <div class="drift-kicker">DRIFT CHAIN</div>
+        <div class="drift-value"><span id="driftPoints">0</span><span id="driftMult">x1</span></div>
+        <div class="drift-sub" id="driftSub">KEEP IT SLIDING</div>
+      </div>
+
+      <div id="toasts"></div>
+    </div>
+
+    <!-- ============ Cinematic overlays ============ -->
+    <div id="letterbox"><div class="bar top"></div><div class="bar bottom"></div></div>
+
+    <div id="introOverlay">
+      <div class="intro-card">
+        <div class="intro-kicker" id="introKicker">SPRINT · HARBOR DISTRICT</div>
+        <h1 id="introEventName">HARBOR SPRINT</h1>
+        <div class="intro-meta">
+          <div><span class="im-label">DISTANCE</span><span id="introLen">1.4 KM</span></div>
+          <div><span class="im-label">RIVALS</span><span id="introRivals">4</span></div>
+          <div><span class="im-label">REWARD</span><span id="introReward">$8,000</span></div>
+        </div>
+        <div class="intro-line"></div>
+        <div class="intro-tip" id="introTip">Winning unlocks new events across the city.</div>
+      </div>
+    </div>
+
+    <div id="countdown"><span id="countdownNum">3</span><div id="goText">GO</div></div>
+
+    <!-- ============ Loading ============ -->
+    <div id="loading" class="screen">
+      <div class="load-logo">APEX <span>NIGHTS</span></div>
+      <div class="load-bar"><div id="loadingBar"></div></div>
+      <div class="load-status" id="loadingText">Starting engine…</div>
+      <div class="load-tip" id="loadingTip">Tip: press SPACE to handbrake and drift through corners.</div>
+    </div>
+
+    <!-- ============ Main menu ============ -->
+    <div id="menuScreen" class="screen">
+      <div class="menu-shade"></div>
+      <div class="menu-inner">
+        <div class="brand">
+          <div class="brand-kicker">OPEN WORLD STREET RACING</div>
+          <h1 class="brand-title">APEX<span>NIGHTS</span></h1>
+          <div class="brand-sub">THE CITY IS YOUR TRACK</div>
+        </div>
+        <div class="menu-actions">
+          <button id="btnStart" class="btn btn-primary"><span class="btn-tag">CAREER</span><span id="btnStartLabel">START ENGINE</span><span class="btn-arrow">›</span></button>
+          <button id="btnControls" class="btn btn-ghost">HOW TO PLAY</button>
+          <button id="btnResetProgress" class="btn btn-tiny">RESET PROGRESS</button>
+        </div>
+        <div class="menu-saveinfo" id="menuSaveInfo">No career yet — a starter BAVARIS is waiting in the garage.</div>
+        <div class="menu-footer">
+          <div class="foot-item"><kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd> DRIVE</div>
+          <div class="foot-item"><kbd>Q</kbd><kbd>E</kbd> GEARS</div>
+          <div class="foot-item"><kbd>SHIFT</kbd> NOS</div>
+          <div class="foot-item"><kbd>SPACE</kbd> HANDBRAKE</div>
+          <div class="foot-item"><kbd>C</kbd> CAMERA</div>
+          <div class="foot-item"><kbd>F</kbd> INTERACT</div>
+          <div class="foot-item"><kbd>R</kbd> RESET CAR</div>
+        </div>
+      </div>
+      <div class="menu-version">BUILD 2.2 · CIRCUIT WALLS</div>
+    </div>
+
+    <!-- ============ Controls guide ============ -->
+    <div id="guideScreen" class="screen hidden">
+      <div class="modal wide">
+        <div class="modal-head">
+          <div><div class="kicker">DRIVER MANUAL</div><h2>HOW TO PLAY</h2></div>
+          <button class="close-btn" data-close="guideScreen">×</button>
+        </div>
+        <div class="guide-grid">
+          <div class="guide-col">
+            <h3>DRIVING</h3>
+            <div class="guide-row"><kbd>W</kbd><kbd>S</kbd><span>Throttle / Brake &amp; reverse</span></div>
+            <div class="guide-row"><kbd>A</kbd><kbd>D</kbd><span>Steer</span></div>
+            <div class="guide-row"><kbd>Q</kbd><kbd>E</kbd><span>Manual gearbox — down / up</span></div>
+            <div class="guide-row"><kbd>SPACE</kbd><span>Handbrake — initiate drifts</span></div>
+            <div class="guide-row"><kbd>SHIFT</kbd><span>Nitrous boost</span></div>
+            <div class="guide-row"><kbd>C</kbd><span>Change camera (chase / hood)</span></div>
+            <div class="guide-row"><kbd>R</kbd><span>Reset car to road</span></div>
+            <div class="guide-row"><kbd>F</kbd><span>Interact (garage, races, store)</span></div>
+            <div class="guide-row"><kbd>M</kbd><span>City map &amp; navigation</span></div>
+            <div class="guide-row"><kbd>ESC</kbd><span>Pause / save</span></div>
+          </div>
+          <div class="guide-col">
+            <h3>CAREER</h3>
+            <p class="guide-p">You start with a BAVARIS SP 320 and a few thousand dollars. Drive to the glowing <strong>APEX GARAGE</strong> to install upgrades, paint your car and swap rides.</p>
+            <p class="guide-p">Race markers are scattered across the city. Finish <strong>1st</strong> to bank the big payout and unlock new challenges. Speed traps and drift zones pay cash in free roam.</p>
+            <p class="guide-p">Time flows from day to night. The city's neon comes alive after sunset — visibility drops, so use your headlights.</p>
+            <div class="guide-legend">
+              <div><span class="leg-dot amber"></span>Available race</div>
+              <div><span class="leg-dot green"></span>Won</div>
+              <div><span class="leg-dot grey"></span>Locked</div>
+              <div><span class="leg-dot cyan"></span>Free-roam challenge</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============ Garage ============ -->
+    <div id="garageScreen" class="screen garage-screen hidden">
+      <div class="shop-topbar">
+        <div class="shop-title"><span class="kicker">APEX GARAGE</span><h2 id="garageCarTitle">BAVARIS SP 320</h2></div>
+        <div class="shop-money"><span class="cur">$</span><span id="garageMoney">0</span></div>
+        <button class="close-btn" data-close="garageScreen">×</button>
+      </div>
+      <div class="shop-body">
+        <div class="shop-left">
+          <div class="tabbar" id="garageTabs">
+            <button class="tab active" data-tab="tune">TUNE</button>
+            <button class="tab" data-tab="style">STYLE</button>
+            <button class="tab" data-tab="fleet">FLEET</button>
+          </div>
+          <div class="shop-panel" id="garageContent"></div>
+        </div>
+        <div class="shop-preview">
+          <canvas id="garageCanvas"></canvas>
+          <div class="preview-hint">DRAG TO ROTATE</div>
+          <div class="preview-oem" id="garagePreviewTag">SP 320</div>
+        </div>
+        <div class="shop-right">
+          <div class="spec-head">PERFORMANCE</div>
+          <div class="stats" id="garageStats"></div>
+          <div class="spec-head" style="margin-top:18px">TOTAL INVESTED</div>
+          <div class="invested" id="garageInvested">$0</div>
+          <div class="garage-actions">
+            <button class="btn btn-primary btn-sm" id="garageDone">BACK TO CITY</button>
+            <div class="hintline">Changes are saved automatically.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============ Dealership ============ -->
+    <div id="dealerScreen" class="screen garage-screen hidden">
+      <div class="shop-topbar">
+        <div class="shop-title"><span class="kicker">APEX MOTORS · DEALERSHIP</span><h2 id="dealerCarTitle">SELECT A CAR</h2></div>
+        <div class="shop-money"><span class="cur">$</span><span id="dealerMoney">0</span></div>
+        <button class="close-btn" data-close="dealerScreen">×</button>
+      </div>
+      <div class="shop-body">
+        <div class="shop-left">
+          <div class="tabbar"><button class="tab active">SHOWROOM</button></div>
+          <div class="shop-panel" id="dealerList"></div>
+        </div>
+        <div class="shop-preview">
+          <canvas id="dealerCanvas"></canvas>
+          <div class="preview-hint">DRAG TO ROTATE</div>
+          <div class="preview-oem" id="dealerPreviewTag">SHOWROOM</div>
+        </div>
+        <div class="shop-right">
+          <div class="spec-head">PERFORMANCE</div>
+          <div class="stats" id="dealerStats"></div>
+          <div class="dealer-price">
+            <div class="spec-head">PRICE</div>
+            <div class="price-row"><span class="cur">$</span><span id="dealerPrice">0</span></div>
+          </div>
+          <div class="garage-actions">
+            <button class="btn btn-primary btn-sm" id="dealerBuy">PURCHASE</button>
+            <button class="btn btn-ghost btn-sm hidden" id="dealerSelect">DRIVE THIS CAR</button>
+            <div class="hintline" id="dealerHint">Cars are delivered to your garage instantly.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============ Pause ============ -->
+    <div id="pauseScreen" class="screen hidden">
+      <div class="modal">
+        <div class="modal-head">
+          <div><div class="kicker">PAUSED</div><h2>APEX NIGHTS</h2></div>
+          <button class="close-btn" data-close="pauseScreen">×</button>
+        </div>
+        <div class="pause-grid">
+          <button class="btn btn-primary" id="btnResume">RESUME</button>
+          <button class="btn btn-ghost" id="btnPauseGarage">GARAGE INFO</button>
+          <button class="btn btn-ghost" id="btnSaveQuit">SAVE &amp; MAIN MENU</button>
+          <div class="settings">
+            <div class="setting-row"><span>GRAPHICS</span>
+              <div class="seg" id="qualitySeg">
+                <button data-q="low">LOW</button><button data-q="medium" class="active">MEDIUM</button><button data-q="high">HIGH</button>
+              </div>
+            </div>
+            <div class="setting-row"><span>DAY / NIGHT SPEED</span>
+              <div class="seg" id="timeSeg">
+                <button data-t="slow">SLOW</button><button data-t="normal" class="active">NORMAL</button><button data-t="fast">FAST</button>
+              </div>
+            </div>
+            <div class="setting-row"><span>MASTER VOLUME</span>
+              <input type="range" id="volumeRange" min="0" max="100" value="70" />
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============ Results ============ -->
+    <div id="resultsScreen" class="screen hidden">
+      <div class="results-card">
+        <div class="results-kicker" id="resultKicker">EVENT COMPLETE</div>
+        <div class="result-place"><span id="resultPlace">1</span><span class="ord" id="resultOrd">ST</span></div>
+        <h2 id="resultName">HARBOR SPRINT</h2>
+        <div class="result-rows">
+          <div class="result-row"><span>TIME</span><b id="resultTime">00:00.00</b></div>
+          <div class="result-row"><span>PAYOUT</span><b id="resultPayout">$0</b></div>
+          <div class="result-row"><span>BEST</span><b id="resultBest">--:--</b></div>
+        </div>
+        <div class="unlock-banner hidden" id="resultUnlock"><span class="unlock-icon">!</span><div><div class="unlock-kicker">NEW CHALLENGE UNLOCKED</div><div class="unlock-name" id="resultUnlockName">DOWNTOWN DASH</div></div></div>
+        <div class="results-actions">
+          <button class="btn btn-ghost" id="btnResultRetry">RETRY</button>
+          <button class="btn btn-primary" id="btnResultContinue">CONTINUE</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============ Map ============ -->
+    <div id="mapScreen" class="screen hidden">
+      <div class="map-head">
+        <div><div class="kicker">CITY NAVIGATION</div><h2>APEX CITY</h2></div>
+        <div class="map-legend">
+          <span><i class="leg-dot amber"></i>RACE</span>
+          <span><i class="leg-dot green"></i>WON</span>
+          <span><i class="leg-dot grey"></i>LOCKED</span>
+          <span><i class="leg-dot cyan"></i>CHALLENGE</span>
+          <span><i class="leg-dot white"></i>YOU</span>
+        </div>
+        <button class="close-btn" data-close="mapScreen">×</button>
+      </div>
+      <div class="map-nav">
+        <div class="map-nav-hint" id="mapNavHint">CLICK THE MAP TO SET A DESTINATION</div>
+        <button class="btn btn-ghost btn-tiny hidden" id="mapNavClear">CLEAR ROUTE</button>
+      </div>
+      <div class="map-body"><canvas id="bigmap" width="1400" height="1400"></canvas></div>
+      <div class="map-hint">Click a marker or anywhere on the map to navigate · <kbd>M</kbd> or <kbd>ESC</kbd> to close</div>
+    </div>
+
+    <!-- ============ Intro hint ============ -->
+    <div id="hintBox" class="hidden"></div>
+  </div>
+
+  <script type="module" src="./src/main.js"></script>
+</body>
+</html>
