@@ -2,6 +2,8 @@ import { SAVE_KEY } from './src/data.js';
 
 const authScreen = document.getElementById('authScreen');
 const authForms = document.getElementById('authForms');
+const authOfflineOwner = document.getElementById('authOfflineOwner');
+const authFooter = document.getElementById('authFooter');
 const authError = document.getElementById('authError');
 const authNotice = document.getElementById('authNotice');
 const authAnnouncement = document.getElementById('authAnnouncement');
@@ -16,6 +18,7 @@ const toolbar = document.getElementById('accountToolbar');
 const accountSavePrefix = SAVE_KEY;
 
 let appStatus = null;
+let backendAvailable = false;
 let currentAccount = null;
 let appStarted = false;
 let pendingSave = null;
@@ -303,6 +306,7 @@ document.getElementById('authRegisterTab').addEventListener('click', () => showL
 
 authLoginForm.addEventListener('submit', async (event) => {
   event.preventDefault();
+  if (!backendAvailable) return;
   const form = new FormData(authLoginForm);
   const submit = authLoginForm.querySelector('button[type="submit"]');
   submit.disabled = true;
@@ -325,6 +329,7 @@ authLoginForm.addEventListener('submit', async (event) => {
 
 authRegisterForm.addEventListener('submit', async (event) => {
   event.preventDefault();
+  if (!backendAvailable) return;
   const form = new FormData(authRegisterForm);
   const submit = authRegisterForm.querySelector('button[type="submit"]');
   submit.disabled = true;
@@ -402,6 +407,10 @@ new MutationObserver(() => {
 async function initialize() {
   try {
     appStatus = await api('/api/auth/status');
+    if (!appStatus.settings || typeof appStatus.setupRequired !== 'boolean') {
+      throw new Error('The server returned an invalid authentication status.');
+    }
+    backendAvailable = true;
     if (appStatus.settings.announcement) {
       authAnnouncement.textContent = appStatus.settings.announcement;
       authAnnouncement.classList.remove('hidden');
@@ -413,8 +422,25 @@ async function initialize() {
     toolbar.classList.add('hidden');
     showLoginForm(appStatus.setupRequired ? 'register' : 'login');
   } catch (error) {
-    authForms.classList.add('hidden');
-    showError(`Authentication service unavailable. Start the game with start-game.bat or npm start. (${error.message})`);
+    backendAvailable = false;
+    appStatus = {
+      settings: {
+        allowRegistration: true,
+        announcement: '',
+        defaultQuality: 'medium',
+        defaultTimeSpeed: 'normal',
+        maintenanceMode: false,
+      },
+      setupRequired: false,
+    };
+    toolbar.classList.add('hidden');
+    authOfflineOwner.classList.remove('hidden');
+    authFooter.textContent = 'ACCOUNT SAVES REQUIRE THE NODE/SQLITE SERVICE';
+    showLoginForm('login');
+    authForms.querySelectorAll('input, button[type="submit"]').forEach((control) => {
+      control.disabled = true;
+    });
+    showError(`The Node/SQLite authentication service is unavailable. Sign-in, account creation, owner setup, and gameplay are disabled until it connects. Run start-game.bat or npm start on a Node host. (${error.message})`);
   }
 }
 
