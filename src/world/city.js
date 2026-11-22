@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
+import { mergeGeometries } from 'three/addons/utils/buffergeometryutils.js';
 import {
   ROAD_LINES, RING, ROAD_WIDTH, WORLD_BOUNDS, GARAGE, DEALER, LANDMARKS,
 } from '../data.js';

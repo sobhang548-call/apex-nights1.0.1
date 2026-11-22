@@ -5,9 +5,9 @@ import {
 	Vector2,
 	WebGLRenderTarget
 } from 'three';
-import { CopyShader } from '../shaders/CopyShader.js';
-import { ShaderPass } from './ShaderPass.js';
-import { ClearMaskPass, MaskPass } from './MaskPass.js';
+import { CopyShader } from '../shaders/copyshader.js';
+import { ShaderPass } from './shaderpass.js';
+import { ClearMaskPass, MaskPass } from './maskpass.js';
 
 /**
  * Used to implement post-processing effects in three.js.

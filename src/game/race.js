@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
+import { mergeGeometries } from 'three/addons/utils/buffergeometryutils.js';
 import {
   RACES, RACE_BY_ID, CAR_BY_ID, emptyCosmetics,
 } from '../data.js';
