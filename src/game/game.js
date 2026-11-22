@@ -109,7 +109,7 @@ export class Game {
     if (this.nav) this.nav.setBeaconVisible(true);
     this._updateObjective();
     this.toast('WELCOME TO APEX CITY', 'Drive to a glowing marker', 'M city map · F interact', '');
-    if (!this._manualTipShown && this.player.manual) {
+    if (!this._manualTipShown) {
       this._manualTipShown = true;
       this.toast('MANUAL GEARBOX', 'Q / E to shift down / up', 'SHIFT = NOS · watch the rev counter', '');
     }
