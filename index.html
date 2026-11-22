@@ -15,6 +15,85 @@
   </script>
 </head>
 <body>
+  <main id="authScreen" class="auth-screen">
+    <div class="auth-orbit auth-orbit-one"></div>
+    <div class="auth-orbit auth-orbit-two"></div>
+    <section class="auth-panel" aria-labelledby="authTitle">
+      <h1 class="auth-brand" id="authTitle">APEX<span>NIGHTS</span></h1>
+      <p class="auth-subtitle">THE CITY IS YOUR TRACK</p>
+      <div id="authAnnouncement" class="auth-announcement hidden"></div>
+      <div id="authNotice" class="auth-notice hidden" role="status" aria-live="polite"></div>
+      <div id="authError" class="auth-error hidden" role="alert" aria-live="assertive"></div>
+
+      <div id="authForms" class="hidden">
+        <div id="authSetupNote" class="auth-setup-note hidden">
+          FIRST RUN · CREATE THE OWNER ACCOUNT
+        </div>
+        <div id="authTabs" class="auth-tabs">
+          <button type="button" class="auth-tab active" id="authLoginTab">SIGN IN</button>
+          <button type="button" class="auth-tab" id="authRegisterTab">CREATE ACCOUNT</button>
+        </div>
+        <form id="authLoginForm" class="auth-form">
+          <label for="authLoginUsername">USERNAME</label>
+          <input id="authLoginUsername" name="username" autocomplete="username" minlength="3" maxlength="24" required />
+          <label for="authLoginPassword">PASSWORD</label>
+          <input id="authLoginPassword" name="password" type="password" autocomplete="current-password" maxlength="128" required />
+          <button class="btn btn-primary auth-submit" type="submit">SIGN IN <span class="btn-arrow">›</span></button>
+        </form>
+        <form id="authRegisterForm" class="auth-form hidden">
+          <label for="authRegisterUsername">USERNAME</label>
+          <input id="authRegisterUsername" name="username" autocomplete="username" minlength="3" maxlength="24" required />
+          <label for="authRegisterPassword">PASSWORD <span>12+ CHARACTERS</span></label>
+          <input id="authRegisterPassword" name="password" type="password" autocomplete="new-password" minlength="12" maxlength="128" required />
+          <label for="authRegisterConfirm">CONFIRM PASSWORD</label>
+          <input id="authRegisterConfirm" name="confirmPassword" type="password" autocomplete="new-password" minlength="12" maxlength="128" required />
+          <button class="btn btn-primary auth-submit" id="authRegisterSubmit" type="submit">CREATE ACCOUNT <span class="btn-arrow">›</span></button>
+        </form>
+      </div>
+
+      <div id="authSignedIn" class="auth-signed-in hidden">
+        <div class="auth-signed-kicker">SIGNED IN AS</div>
+        <div class="auth-account-name" id="authAccountName"></div>
+        <div class="auth-role" id="authAccountRole"></div>
+        <button type="button" class="btn btn-primary auth-submit" id="authLaunchGame">ENTER THE CITY <span class="btn-arrow">›</span></button>
+        <button type="button" class="btn btn-ghost auth-submit" id="authSignOut">SIGN OUT</button>
+      </div>
+
+      <section id="ownerDashboard" class="owner-dashboard hidden" aria-labelledby="ownerTitle">
+        <div class="owner-head">
+          <div>
+            <div class="auth-signed-kicker">OWNER DASHBOARD</div>
+            <h2 id="ownerTitle">CONTROL ROOM</h2>
+          </div>
+          <span class="owner-badge">OWNER</span>
+        </div>
+        <div id="ownerStatus" class="owner-status" aria-live="polite"></div>
+        <form id="ownerSettingsForm" class="owner-settings">
+          <label class="owner-toggle"><input id="settingRegistration" type="checkbox" /><span>Allow new accounts</span></label>
+          <label class="owner-toggle"><input id="settingMaintenance" type="checkbox" /><span>Maintenance mode</span></label>
+          <label for="settingAnnouncement">PLAYER ANNOUNCEMENT</label>
+          <input id="settingAnnouncement" maxlength="180" placeholder="Optional message for players" />
+          <div class="owner-select-row">
+            <label for="settingQuality">NEW CAREER QUALITY</label>
+            <select id="settingQuality"><option value="low">LOW</option><option value="medium">MEDIUM</option><option value="high">HIGH</option></select>
+          </div>
+          <div class="owner-select-row">
+            <label for="settingTimeSpeed">NEW CAREER TIME SPEED</label>
+            <select id="settingTimeSpeed"><option value="slow">SLOW</option><option value="normal">NORMAL</option><option value="fast">FAST</option></select>
+          </div>
+          <button class="btn btn-primary auth-submit" type="submit">SAVE GAME SETTINGS</button>
+        </form>
+        <div class="owner-accounts-head"><h3>PLAYER ACCOUNTS</h3><span id="ownerAccountCount"></span></div>
+        <div id="ownerAccountList" class="owner-account-list"></div>
+        <div class="owner-actions">
+          <button type="button" class="btn btn-ghost" id="ownerLaunchGame">PLAY GAME</button>
+          <button type="button" class="btn btn-ghost" id="ownerSignOut">SIGN OUT</button>
+        </div>
+      </section>
+      <div class="auth-footer">SECURE LOCAL SIGN-IN · CAREER SAVED TO YOUR ACCOUNT</div>
+    </section>
+  </main>
+
   <div id="app">
     <canvas id="scene"></canvas>
     <div id="grade"></div>
@@ -359,6 +438,11 @@
     <div id="hintBox" class="hidden"></div>
   </div>
 
-  <script type="module" src="./src/main.js"></script>
+  <div id="accountToolbar" class="account-toolbar hidden">
+    <span id="toolbarAccountName"></span>
+    <button type="button" id="toolbarDashboard" class="hidden">OWNER DASHBOARD</button>
+    <button type="button" id="toolbarSignOut">SIGN OUT</button>
+  </div>
+  <script type="module" src="./auth.js"></script>
 </body>
 </html>

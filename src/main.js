@@ -79,7 +79,12 @@ async function boot() {
 
   let save = loadSave();
   const returning = !!save;
-  if (!save) save = newSave();
+  if (!save) {
+    save = newSave();
+    const defaults = window.APEX_GAME_DEFAULTS || {};
+    if (['low', 'medium', 'high'].includes(defaults.quality)) save.settings.quality = defaults.quality;
+    if (['slow', 'normal', 'fast'].includes(defaults.timeSpeed)) save.settings.timeSpeed = defaults.timeSpeed;
+  }
   const quality = save.settings.quality || 'medium';
   let renderScale = 1;
   const pixelRatio = () => {
@@ -273,10 +278,14 @@ async function boot() {
     $('guideScreen').classList.remove('hidden');
   });
 
-  $('btnResetProgress').addEventListener('click', () => {
+  $('btnResetProgress').addEventListener('click', async () => {
     if (window.confirm('Erase your career, cars and money? This cannot be undone.')) {
-      clearSave();
-      window.location.reload();
+      try {
+        await clearSave();
+        window.location.reload();
+      } catch (err) {
+        window.alert(`Could not reset career: ${err.message}`);
+      }
     }
   });
 

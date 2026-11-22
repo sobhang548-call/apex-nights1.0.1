@@ -7,6 +7,11 @@ export function defaultSettings() {
   return { quality: 'medium', timeSpeed: 'normal', volume: 70 };
 }
 
+function saveKey() {
+  const accountId = window.APEX_AUTH_ACCOUNT?.id;
+  return accountId ? `${SAVE_KEY}:user:${accountId}` : SAVE_KEY;
+}
+
 export function newSave() {
   return {
     v: 1,
@@ -35,7 +40,7 @@ export function newSave() {
 
 export function loadSave() {
   try {
-    const raw = localStorage.getItem(SAVE_KEY);
+    const raw = localStorage.getItem(saveKey());
     if (!raw) return null;
     const data = JSON.parse(raw);
     if (!data || typeof data !== 'object') return null;
@@ -75,12 +80,15 @@ export function loadSave() {
 }
 
 export function hasSave() {
-  try { return !!localStorage.getItem(SAVE_KEY); } catch { return false; }
+  try { return !!localStorage.getItem(saveKey()); } catch { return false; }
 }
 
 export function writeSave(save) {
   try {
-    localStorage.setItem(SAVE_KEY, JSON.stringify(save));
+    localStorage.setItem(saveKey(), JSON.stringify(save));
+    if (window.APEX_AUTH_ACCOUNT && typeof window.apexPersistGameSave === 'function') {
+      window.apexPersistGameSave(save);
+    }
     return true;
   } catch (err) {
     console.warn('Save write failed', err);
@@ -88,8 +96,19 @@ export function writeSave(save) {
   }
 }
 
-export function clearSave() {
-  try { localStorage.removeItem(SAVE_KEY); } catch { /* ignore */ }
+export async function clearSave() {
+  try {
+    localStorage.removeItem(saveKey());
+  } catch (err) {
+    console.warn('Local save reset failed', err);
+  }
+  if (window.APEX_AUTH_ACCOUNT) {
+    if (typeof window.apexClearAccountSaveQueue === 'function') {
+      await window.apexClearAccountSaveQueue();
+    }
+    const response = await fetch('/api/game/save', { method: 'DELETE', credentials: 'same-origin' });
+    if (!response.ok) throw new Error(`Account save reset failed (HTTP ${response.status}).`);
+  }
 }
 
 export function ensureCarState(save, carId) {
