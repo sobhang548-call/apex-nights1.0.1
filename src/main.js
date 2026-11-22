@@ -37,7 +37,7 @@ const loading = {
 };
 
 const LOAD_TIPS = [
-  'Tip: Q and E shift the manual gearbox down and up.',
+  'Tip: Q and E shift gears in cars with manual transmissions.',
   'Tip: shift before the limiter cuts power — watch the rev counter.',
   'Tip: tap SPACE to break traction, then feed in throttle to hold the slide.',
   'Tip: drifts and wheelspin recharge NOS faster than cruising.',

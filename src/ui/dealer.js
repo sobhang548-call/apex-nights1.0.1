@@ -102,7 +102,7 @@ export class DealerUI {
           <div>
             <div class="dealer-brand">${car.brand} · ${(BRANDS[car.brand] || {}).country || ''}</div>
             <div class="dealer-name">${car.name}</div>
-            <div class="dealer-tag">${car.cls} · ${car.drive}</div>
+            <div class="dealer-tag">${car.cls} · ${car.drive} · ${car.transmission || 'manual'}</div>
           </div>
           <div class="dealer-cost${owned ? ' owned' : locked ? ' locked' : ''}">${cost}</div>
         </div>`;
@@ -120,7 +120,7 @@ export class DealerUI {
 
     this.titleEl.textContent = car.name;
     this.moneyEl.textContent = formatMoney(save.money);
-    this.tagEl.textContent = `${car.brand} · ${car.cls}`;
+    this.tagEl.textContent = `${car.brand} · ${car.cls} · ${car.transmission || 'manual'}`;
 
     const priceRow = this.priceEl.parentElement;
     this.priceEl.textContent = owned ? 'OWNED' : formatMoney(car.price);
