@@ -806,9 +806,9 @@ export class World {
       }
     }
 
-    onProgress(1);
     this._flushBatches(batches);
     this.colliders.push(...colliders);
+    onProgress(1);
   }
 
   _buildStreetLights() {
