@@ -102,6 +102,10 @@ async function boot() {
   setLoading(26, 'Paving 40 kilometres of road…');
   await nextFrame();
   const world = new World(scene, renderer, sky, quality);
+  await world.build((progress) => {
+    const percent = Math.round(progress * 100);
+    setLoading(26 + progress * 35, `Building city blocks… ${percent}%`);
+  });
 
   setLoading(64, 'Warming up the tyre model…');
   await nextFrame();

@@ -294,11 +294,13 @@ export class World {
     this.buildings = [];
     this.landmarkLights = [];
     this.props = [];
+  }
 
+  async build(onCityProgress = () => {}) {
     this._initMaterials();
     this._buildGround();
     this._buildMarkings();
-    this._buildCity();
+    await this._buildCity(onCityProgress);
     this._buildStreetLights();
     this._buildTrafficLights();
     this._buildWaterfront();
@@ -607,11 +609,12 @@ export class World {
     return 'oldtown';
   }
 
-  _buildCity() {
+  async _buildCity(onProgress = () => {}) {
     const batches = new Map();
     const colliders = [];
     const rnd = mulberry32(4242);
     this.blocks = [];
+    let builtBlocks = 0;
 
     const addBuilding = (cx, cz, w, d, h, style, opts = {}) => {
       const geo = new THREE.BoxGeometry(w, h, d);
@@ -764,6 +767,22 @@ export class World {
           if (side === 3) { g.rotateY(-Math.PI / 2); g.translate(cx + BLOCK_HALF - 2, y, cz); }
           this._addBatch(batches, key, g, false, false);
         }
+
+        builtBlocks++;
+        if (builtBlocks % 4 === 0) {
+          onProgress(builtBlocks / (N_BLOCKS * N_BLOCKS));
+          await new Promise((resolve) => {
+            let done = false;
+            const finish = () => {
+              if (!done) {
+                done = true;
+                resolve();
+              }
+            };
+            requestAnimationFrame(() => setTimeout(finish, 0));
+            setTimeout(finish, 80);
+          });
+        }
       }
     }
 
@@ -787,6 +806,7 @@ export class World {
       }
     }
 
+    onProgress(1);
     this._flushBatches(batches);
     this.colliders.push(...colliders);
   }
