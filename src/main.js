@@ -1,8 +1,8 @@
 import * as THREE from 'three';
-import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js';
-import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
-import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js';
-import { OutputPass } from 'three/addons/postprocessing/OutputPass.js';
+import { EffectComposer } from 'three/addons/postprocessing/effectcomposer.js';
+import { RenderPass } from 'three/addons/postprocessing/renderpass.js';
+import { UnrealBloomPass } from 'three/addons/postprocessing/unrealbloompass.js';
+import { OutputPass } from 'three/addons/postprocessing/outputpass.js';
 
 import { CAR_BY_ID } from './data.js';
 import { loadSave, newSave, hasSave, clearSave } from './storage.js';
