@@ -51,6 +51,14 @@
         </form>
       </div>
 
+      <div id="authOfflineOwner" class="auth-offline-owner hidden">
+        <div>
+          <strong>OWNER DASHBOARD</strong>
+          <span>Owner tools require the Node/SQLite service.</span>
+        </div>
+        <button type="button" disabled>SERVER REQUIRED</button>
+      </div>
+
       <div id="authSignedIn" class="auth-signed-in hidden">
         <div class="auth-signed-kicker">SIGNED IN AS</div>
         <div class="auth-account-name" id="authAccountName"></div>
@@ -90,7 +98,7 @@
           <button type="button" class="btn btn-ghost" id="ownerSignOut">SIGN OUT</button>
         </div>
       </section>
-      <div class="auth-footer">SECURE LOCAL SIGN-IN · CAREER SAVED TO YOUR ACCOUNT</div>
+      <div class="auth-footer" id="authFooter">SECURE LOCAL SIGN-IN · CAREER SAVED TO YOUR ACCOUNT</div>
     </section>
   </main>
 

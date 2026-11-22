@@ -66,6 +66,7 @@ body.game-active #app { display: block; }
 .auth-tabs { display: flex; gap: 18px; border-bottom: 1px solid var(--line); margin: 20px 0 18px; }
 .auth-tab { padding: 0 0 10px; border: 0; border-bottom: 2px solid transparent; background: none; color: var(--muted); font-size: 10px; font-weight: 700; letter-spacing: .13em; }
 .auth-tab.active { border-color: var(--accent); color: var(--text); }
+.auth-form input:disabled { cursor: not-allowed; opacity: .58; }
 .auth-form { display: flex; flex-direction: column; gap: 9px; }
 .auth-form label,.owner-settings > label:not(.owner-toggle),.owner-select-row label { margin-top: 6px; color: #abb6c4; font-size: 9px; font-weight: 700; letter-spacing: .15em; }
 .auth-form label span { float: right; color: var(--muted); font-size: 8px; }
@@ -76,6 +77,13 @@ body.game-active #app { display: block; }
 }
 .auth-form input:focus,.owner-settings input:focus,.owner-settings select:focus { border-color: rgba(37,224,255,.62); }
 .auth-submit { width: 100%; margin-top: 12px; }
+.auth-offline-owner {
+  display: flex; align-items: center; justify-content: space-between; gap: 12px;
+  margin-top: 14px; padding: 12px; border: 1px solid var(--line); background: rgba(255,255,255,.025);
+}
+.auth-offline-owner strong { display: block; font-size: 10px; letter-spacing: .1em; }
+.auth-offline-owner span { display: block; margin-top: 5px; color: var(--muted); font-size: 10px; line-height: 1.4; }
+.auth-offline-owner button { flex: 0 0 auto; padding: 8px; border: 1px solid var(--line); background: transparent; color: var(--muted); font-size: 8px; letter-spacing: .07em; cursor: not-allowed; }
 .auth-signed-in { padding-top: 6px; }
 .auth-signed-kicker { color: var(--muted); font-size: 9px; font-weight: 700; letter-spacing: .18em; }
 .auth-account-name { margin-top: 7px; font-size: 24px; font-weight: 700; }
