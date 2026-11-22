@@ -28,7 +28,9 @@ export class Vehicle {
     this.stats = computeStats(def, upgrades);
     this.upgrades = upgrades;
     this.isPlayer = !!opts.isPlayer;
-    this.manual = opts.manual !== undefined ? !!opts.manual : this.isPlayer;
+    this.manual = opts.manual !== undefined
+      ? !!opts.manual
+      : def.transmission !== 'automatic' && this.isPlayer;
     this.effects = opts.effects || null;
     this.audio = opts.audio || null;
 
